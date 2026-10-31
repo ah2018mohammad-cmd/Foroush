@@ -1,0 +1,18 @@
+package ir.foroosh.calc.ui.theme
+
+import androidx.compose.ui.graphics.Color
+
+// پالت برنامه: خاکستری تیره، قرمز، سفید و زرد (برگرفته از سبک طراحی فایل اکسل)
+val Red600 = Color(0xFFD93636)
+val Red700 = Color(0xFFB72626)
+val Red800 = Color(0xFF9A1F1F)
+val Yellow500 = Color(0xFFFFC93C)
+val Yellow600 = Color(0xFFF0B429)
+val Ink900 = Color(0xFF17181C)
+val Ink800 = Color(0xFF222428)
+val Ink700 = Color(0xFF2C2F34)
+val Mist50 = Color(0xFFFCFCFD)
+val Mist100 = Color(0xFFF2F3F5)
+val Mist200 = Color(0xFFE3E5E9)
+val OnDark = Color(0xFFF4F5F7)
+val OnDarkDim = Color(0xFFB9BDC6)
