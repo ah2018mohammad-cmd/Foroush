@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Color
 val Red600 = Color(0xFFD93636)
 val Red700 = Color(0xFFB72626)
 val Red800 = Color(0xFF9A1F1F)
+val Green600 = Color(0xFF2E9E4F)
 val Yellow500 = Color(0xFFFFC93C)
 val Yellow600 = Color(0xFFF0B429)
 val Ink900 = Color(0xFF17181C)

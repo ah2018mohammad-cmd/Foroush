@@ -35,6 +35,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -57,7 +58,9 @@ import ir.foroosh.calc.ui.practical.PracticalScreen
 import ir.foroosh.calc.ui.settings.SettingsScreen
 import ir.foroosh.calc.ui.shayan.ShayanScreen
 import ir.foroosh.calc.ui.theme.ForooshTheme
+import ir.foroosh.calc.ui.theme.Green600
 import ir.foroosh.calc.ui.theme.Red600
+import kotlinx.coroutines.delay
 import java.util.Locale
 
 /** اکتیویتی اصلی — FragmentActivity برای پشتیبانی BiometricPrompt */
@@ -118,6 +121,24 @@ private val tabs = listOf(
 private fun MainScaffold(store: SettingsStore, themeMode: ir.foroosh.calc.data.ThemeMode, onThemeChange: (ir.foroosh.calc.data.ThemeMode) -> Unit) {
     var tab by rememberSaveable { mutableIntStateOf(0) }
 
+    // ---------- آلارم چشمک‌زن عنوان (یک ثانیه) هنگام انتخاب تب شایان / نیک وام ----------
+    var flashTab by remember { mutableIntStateOf(-1) }   // تب در حال چشمک‌زدن (0=شایان، 1=نیک وام)
+    var flashOn by remember { mutableStateOf(false) }    // فاز روشن/خاموش چشمک
+    var prevTab by remember { mutableIntStateOf(-1) }    // برای عدم اجرای چشمک در اولین نمایش
+    LaunchedEffect(tab) {
+        if (prevTab != -1 && (tab == 0 || tab == 1)) {
+            flashTab = tab
+            repeat(4) {              // ۴ بار روشن/خاموش × ۲۵۰ میلی‌ثانیه = یک ثانیه
+                flashOn = true
+                delay(125)
+                flashOn = false
+                delay(125)
+            }
+            flashTab = -1
+        }
+        prevTab = tab
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
@@ -163,45 +184,26 @@ private fun MainScaffold(store: SettingsStore, themeMode: ir.foroosh.calc.data.T
                 .padding(pad)
                 .imePadding()
         ) {
-            // هدر برنامه
-            Column(
+            // هدر برنامه — فقط عنوان تب فعال (بدون نام برنامه و زیرعنوان)
+            Box(
                 Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    Surface(
-                        color = Red600,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp),
-                        modifier = Modifier.size(width = 46.dp, height = 30.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = androidx.compose.ui.Alignment.Center
-                        ) {
-                            Text(
-                                "فروش",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = Color.White
-                            )
-                        }
-                    }
-                    Spacer(Modifier.width(10.dp))
-                    Column {
-                        Text(
-                            tabs[tab].title,
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        Text(
-                            "محاسبه‌گر تسهیلات و تعهدات بانکی",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
+                val flashing = flashTab == tab
+                Text(
+                    tabs[tab].title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = if (flashing) FontWeight.ExtraBold else FontWeight.Bold,
+                    color = when {
+                        flashing && flashOn && flashTab == 0 -> Red600       // آلارم قرمز شایان
+                        flashing && flashOn && flashTab == 1 -> Green600     // آلارم سبز نیک وام
+                        flashing -> Color.Transparent                       // فاز خاموش چشمک
+                        else -> MaterialTheme.colorScheme.onBackground
+                    },
+                    modifier = Modifier.align(androidx.compose.ui.Alignment.CenterStart)
+                )
             }
 
             // محتوای تب فعال

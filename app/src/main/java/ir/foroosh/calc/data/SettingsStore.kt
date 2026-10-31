@@ -7,7 +7,7 @@ import java.security.SecureRandom
 
 /** حالت تم برنامه */
 enum class ThemeMode(val label: String) {
-    SYSTEM("سیستمی"), WHITE("سفید"), GRAY("خاکستری تیره")
+    SYSTEM("سیستمی"), WHITE("روشن"), GRAY("تیره")
 }
 
 /** ذخیره‌سازی تنظیمات: تم، رمز عددی (هش‌شده با نمک) و بیومتریک */
@@ -75,6 +75,9 @@ class SettingsStore(context: Context) {
             .putString("sec_hash", hash(salt, pin))
             .apply()
     }
+
+    /** بازنشانی رمز امنیتی به مقدار پیش‌فرض (در صورت فراموشی) */
+    fun resetSecurityPin() = sp.edit().remove("sec_hash").remove("sec_salt").apply()
 
     // ---------- بیومتریک ----------
     fun setBiometric(on: Boolean) = sp.edit().putBoolean("bio_on", on).apply()

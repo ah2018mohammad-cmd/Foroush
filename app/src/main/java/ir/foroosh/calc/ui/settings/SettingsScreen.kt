@@ -172,7 +172,7 @@ fun SettingsScreen(
                 Column {
                     Text("تم برنامه", style = MaterialTheme.typography.titleSmall)
                     Text(
-                        "انتخاب بین حالت سیستمی، سفید و خاکستری تیره",
+                        "انتخاب بین حالت سیستمی، روشن و تیره",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -216,21 +216,45 @@ fun SettingsScreen(
                 }
             }
             Spacer(Modifier.height(10.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextButton(onClick = { tableWhich = 0; showTable = true }) {
+            // گزینه‌های مشاهده جداول به‌صورت عمودی و دکمه ویرایش به‌صورت افقی (تمام‌عرض)
+            Column {
+                TextButton(
+                    onClick = { tableWhich = 0; showTable = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        Icons.Filled.TableChart,
+                        contentDescription = null,
+                        tint = Red600,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
                     Text("جدول شایان", fontWeight = FontWeight.Bold, color = Red600)
                 }
-                TextButton(onClick = { tableWhich = 1; showTable = true }) {
+                TextButton(
+                    onClick = { tableWhich = 1; showTable = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        Icons.Filled.TableChart,
+                        contentDescription = null,
+                        tint = Red600,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
                     Text("جدول نیک وام", fontWeight = FontWeight.Bold, color = Red600)
                 }
-                TextButton(onClick = { showEditGate = true }) {
+                TextButton(
+                    onClick = { showEditGate = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Icon(
                         Icons.Filled.Edit,
                         contentDescription = null,
                         tint = Yellow500,
                         modifier = Modifier.size(16.dp)
                     )
-                    Spacer(Modifier.width(6.dp))
+                    Spacer(Modifier.width(8.dp))
                     Text("ویرایش جداول", fontWeight = FontWeight.ExtraBold, color = Yellow500)
                 }
             }
@@ -262,9 +286,9 @@ fun SettingsScreen(
                 )
                 Spacer(Modifier.width(10.dp))
                 Column {
-                    Text("فروش — نسخه ۱.۱.۰", style = MaterialTheme.typography.titleSmall)
+                    Text("فروش — نسخه ۱.۲.۰", style = MaterialTheme.typography.titleSmall)
                     Text(
-                        "محاسبه‌گر تسهیلات و تعهدات بانکی؛ فرمول‌ها دقیقاً مطابق فایل اکسل فروش. در این نسخه: رمز ۸ رقمی، ورود رمز چپ‌به‌راست مثل صفحه قفل گوشی و ویرایش جداول ضرایب با رمز امنیتی.",
+                        "محاسبه‌گر تسهیلات و تعهدات بانکی؛ فرمول‌ها دقیقاً مطابق فایل اکسل فروش. در این نسخه: برچسب تم‌ها (روشن/تیره)، اصلاح ورود به ویرایش جداول ضرایب با نمایش رمز پیش‌فرض و امکان بازنشانی، حذف عنوان بالای برنامه و آلارم چشمک‌زن یک‌ثانیه‌ای هنگام انتخاب تب شایان (قرمز) و نیک وام (سبز).",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -444,6 +468,11 @@ private fun SecurityPinGateDialog(
 ) {
     var pin by remember { mutableStateOf("") }
     var err by remember { mutableStateOf<String?>(null) }
+    var confirmResetSec by remember { mutableStateOf(false) }
+
+    fun tryVerify() {
+        if (store.verifySecurityPin(pin)) onGranted() else err = "رمز امنیتی نادرست است؛ اگر رمز پیش‌فرض است: 12345678"
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -459,8 +488,8 @@ private fun SecurityPinGateDialog(
                     Spacer(Modifier.height(12.dp))
                     OutlinedTextField(
                         value = pin,
-                        onValueChange = { if (it.all { c -> c.isDigit() }) pin = it.take(8) },
-                        label = { Text("رمز امنیتی") },
+                        onValueChange = { if (it.all { c -> c.isDigit() }) { pin = it.take(8); err = null } },
+                        label = { Text("رمز امنیتی (۸ رقم)") },
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                         singleLine = true,
@@ -471,18 +500,51 @@ private fun SecurityPinGateDialog(
                         Spacer(Modifier.height(8.dp))
                         Text(err ?: "", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                     }
+                    Spacer(Modifier.height(10.dp))
+                    if (!store.securityPinChanged) {
+                        // نمایش رمز پیش‌فرض تا کاربر بتواند وارد شود
+                        Text(
+                            "رمز امنیتی پیش‌فرض: 12345678",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        TextButton(onClick = { confirmResetSec = true }) {
+                            Text(
+                                "رمز را فراموش کرده‌اید؟ بازنشانی به رمز پیش‌فرض",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             }
         },
         confirmButton = {
-            TextButton(onClick = {
-                if (store.verifySecurityPin(pin)) onGranted() else err = "رمز امنیتی نادرست است"
-            }) { Text("ورود", fontWeight = FontWeight.Bold, color = Red600) }
+            TextButton(onClick = { tryVerify() }) { Text("ورود", fontWeight = FontWeight.Bold, color = Red600) }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("انصراف") }
         }
     )
+
+    if (confirmResetSec) {
+        AlertDialog(
+            onDismissRequest = { confirmResetSec = false },
+            title = { Text("بازنشانی رمز امنیتی") },
+            text = { Text("رمز امنیتی جداول به مقدار پیش‌فرض (12345678) بازگردانده می‌شود. ادامه می‌دهید؟") },
+            confirmButton = {
+                TextButton(onClick = {
+                    store.resetSecurityPin()
+                    confirmResetSec = false
+                }) { Text("بازنشانی", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmResetSec = false }) { Text("انصراف") }
+            }
+        )
+    }
 }
 
 /** دیالوگ تغییر رمز امنیتی جداول ضرایب (رمز جدید ۸ رقم) */
