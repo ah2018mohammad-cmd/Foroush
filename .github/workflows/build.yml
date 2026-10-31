@@ -6,6 +6,10 @@ on:
     tags: [ 'v*' ]
   workflow_dispatch:
 
+# اجازه نوشتن برای ساخت Release هنگام push تگ
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build APK
