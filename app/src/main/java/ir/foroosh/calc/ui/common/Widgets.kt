@@ -102,6 +102,31 @@ fun inputColors() = OutlinedTextFieldDefaults.colors(
     focusedLabelColor = MaterialTheme.colorScheme.secondary,
 )
 
+// ---------- فیلد قفل‌شده (فقط نمایش، غیرقابل ویرایش) ----------
+@Composable
+fun LockedField(label: String, value: String, modifier: Modifier = Modifier) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = {},
+        readOnly = true,
+        enabled = false,
+        label = { Text(label, fontFamily = Vazir) },
+        textStyle = MaterialTheme.typography.titleLarge.copy(
+            fontFamily = Vazir, fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Start
+        ),
+        singleLine = true,
+        shape = RoundedCornerShape(14.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+            disabledBorderColor = MaterialTheme.colorScheme.outlineVariant,
+            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            disabledTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        ),
+        modifier = modifier.fillMaxWidth()
+    )
+}
+
 // ---------- ردیف انتخاب (چیپ‌ها) ----------
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

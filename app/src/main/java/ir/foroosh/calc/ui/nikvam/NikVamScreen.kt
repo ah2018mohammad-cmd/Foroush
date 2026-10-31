@@ -84,7 +84,7 @@ fun NikVamScreen() {
             )
             Spacer(Modifier.height(12.dp))
 
-            // نرخ ثابت ۴٪ مطابق جدول ضرایب نیک وام
+            // نرخ مطابق جدول ضرایب نیک وام (پیش‌فرض ۴٪)
             Row {
                 Text(
                     "نرخ تسهیلات: ",
@@ -92,7 +92,7 @@ fun NikVamScreen() {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    "4% (قرض‌الحسنه)",
+                    "${Coefficients.nikvamRate}% (قرض‌الحسنه)",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.primary

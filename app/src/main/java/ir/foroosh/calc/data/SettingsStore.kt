@@ -7,7 +7,7 @@ import java.security.SecureRandom
 
 /** حالت تم برنامه */
 enum class ThemeMode(val label: String) {
-    SYSTEM("سیستمی"), WHITE("سفید"), GRAY("خاکستری")
+    SYSTEM("سیستمی"), WHITE("سفید"), GRAY("خاکستری تیره")
 }
 
 /** ذخیره‌سازی تنظیمات: تم، رمز عددی (هش‌شده با نمک) و بیومتریک */
@@ -51,6 +51,30 @@ class SettingsStore(context: Context) {
     }
 
     fun disablePin() = sp.edit().putBoolean("pin_on", false).putBoolean("bio_on", false).apply()
+
+    // ---------- رمز امنیتی جداول ضرایب ----------
+    /** رمز پیش‌فرض رمز امنیتی — تا زمانی که کاربر تغییرش ندهد معتبر است */
+    private val DEFAULT_SEC_PIN = "12345678"
+
+    val securityPinChanged: Boolean get() = !sp.getString("sec_hash", "").isNullOrBlank()
+
+    /** تأیید رمز امنیتی برای ویرایش جداول ضرایب */
+    fun verifySecurityPin(pin: String): Boolean {
+        val stored = sp.getString("sec_hash", "") ?: ""
+        if (stored.isBlank()) return pin == DEFAULT_SEC_PIN
+        val salt = sp.getString("sec_salt", "") ?: ""
+        return hash(salt, pin) == stored
+    }
+
+    /** تغییر رمز امنیتی (رمز جدید باید ۸ رقم باشد) */
+    fun setSecurityPin(pin: String) {
+        val salt = ByteArray(16).also { SecureRandom().nextBytes(it) }
+            .joinToString("") { "%02x".format(it) }
+        sp.edit()
+            .putString("sec_salt", salt)
+            .putString("sec_hash", hash(salt, pin))
+            .apply()
+    }
 
     // ---------- بیومتریک ----------
     fun setBiometric(on: Boolean) = sp.edit().putBoolean("bio_on", on).apply()

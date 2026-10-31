@@ -3,13 +3,16 @@ package ir.foroosh.calc.data
 /**
  * جداول ضرایب — منبع: فایل اکسل «فروش»، شیت‌های «جدول ضرایب شایان» و «جدول ضرایب نیک وام»
  * pct = درصد تسهیلات نسبت به سپرده (به صورت کسر: 0.5 یعنی ۵۰٪)
+ *
+ * از نسخه ۱.۱.۰ جدول‌ها قابل ویرایش‌اند؛ مقادیر ویرایش‌شده توسط CoefficientRepo
+ * در SharedPreferences ذخیره و در شروع برنامه بازیابی می‌شوند.
  */
 data class CoefRow(val rate: Int, val avg: Int, val repay: Int, val pct: Double)
 
 object Coefficients {
 
-    // ===== جدول ضرایب شایان (۱۹ ردیف) =====
-    val shayan = listOf(
+    // ===== جدول ضرایب شایان (۱۹ ردیف پیش‌فرض اکسل) =====
+    private val shayanDefaults = listOf(
         CoefRow(23, 1, 12, 0.5),
         CoefRow(23, 2, 12, 1.5), CoefRow(23, 2, 24, 0.55), CoefRow(23, 2, 36, 0.3),
         CoefRow(23, 3, 12, 2.0), CoefRow(23, 3, 24, 0.8), CoefRow(23, 3, 36, 0.5), CoefRow(23, 3, 48, 0.3),
@@ -19,8 +22,8 @@ object Coefficients {
         CoefRow(14, 6, 12, 1.1), CoefRow(14, 6, 24, 0.55),
     )
 
-    // ===== جدول ضرایب نیک وام (۳۲ ردیف — نرخ ۴٪) =====
-    val nikvam = listOf(
+    // ===== جدول ضرایب نیک وام (۳۲ ردیف پیش‌فرض اکسل — نرخ ۴٪) =====
+    private val nikvamDefaults = listOf(
         CoefRow(4, 1, 12, 0.27), CoefRow(4, 1, 24, 0.15), CoefRow(4, 1, 36, 0.10),
         CoefRow(4, 2, 12, 0.55), CoefRow(4, 2, 24, 0.30), CoefRow(4, 2, 36, 0.20), CoefRow(4, 2, 48, 0.15),
         CoefRow(4, 3, 12, 0.80), CoefRow(4, 3, 24, 0.40), CoefRow(4, 3, 36, 0.30), CoefRow(4, 3, 48, 0.20), CoefRow(4, 3, 60, 0.15),
@@ -30,9 +33,21 @@ object Coefficients {
         CoefRow(4, 12, 12, 3.20), CoefRow(4, 12, 24, 1.60), CoefRow(4, 12, 36, 1.10), CoefRow(4, 12, 48, 0.80), CoefRow(4, 12, 60, 0.60),
     )
 
-    val shayanRates = listOf(14, 18, 23)
-    val nikvamRate = 4
-    val nikvamAvgOptions = listOf(1, 2, 3, 4, 6, 9, 12)
+    /** جدول‌های جاری — توسط CoefficientRepo (بعد از ویرایش کاربر) جایگزین می‌شوند */
+    var shayan: List<CoefRow> = shayanDefaults
+    var nikvam: List<CoefRow> = nikvamDefaults
+
+    fun shayanDefaultsList(): List<CoefRow> = shayanDefaults
+    fun nikvamDefaultsList(): List<CoefRow> = nikvamDefaults
+
+    /** نرخ‌های موجود در جدول شایان (به‌صورت پویا از جدول جاری) */
+    val shayanRates: List<Int> get() = shayan.map { it.rate }.distinct().sorted()
+
+    /** نرخ جدول نیک وام (پیش‌فرض ۴٪) */
+    val nikvamRate: Int get() = nikvam.firstOrNull()?.rate ?: 4
+
+    /** دوره‌های معدل‌گیری نیک وام (پویا) */
+    val nikvamAvgOptions: List<Int> get() = nikvam.map { it.avg }.distinct().sorted()
 
     fun shayanFor(rate: Int, avg: Int, repay: Int): CoefRow? =
         shayan.firstOrNull { it.rate == rate && it.avg == avg && it.repay == repay }

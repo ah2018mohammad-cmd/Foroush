@@ -18,6 +18,7 @@ import ir.foroosh.calc.data.CalcEngine
 import ir.foroosh.calc.ui.common.BigResult
 import ir.foroosh.calc.ui.common.ChoiceChips
 import ir.foroosh.calc.ui.common.DropdownSelector
+import ir.foroosh.calc.ui.common.LockedField
 import ir.foroosh.calc.ui.common.MoneyField
 import ir.foroosh.calc.ui.common.ResultRow
 import ir.foroosh.calc.ui.common.SectionCard
@@ -66,12 +67,11 @@ fun PracticalScreen() {
     val bRes = if (bAmt > 0 && bD > 0) CalcEngine.bimeh(bType, bAmt, effBDays) else null
 
     // ===== ۵) قرض‌الحسنه =====
-    var qType by remember { mutableIntStateOf(2) } // اشتغال
-    var qKarMOZ by remember { mutableStateOf("4") }
+    var qType by remember { mutableIntStateOf(0) } // ازدواج
     var qMonthIdx by remember { mutableIntStateOf(4) } // 60
     var qAmount by remember { mutableStateOf("2000000000") }
     val qM = CalcEngine.qarzMonths[qMonthIdx]
-    val qKar = qKarMOZ.toDoubleOrNull() ?: 0.0
+    val qKar = CalcEngine.QARZ_FEE_PCT // کارمزد ثابت ۴٪ — غیرقابل ویرایش
     val qAmt = qAmount.toLongOrNull()?.toDouble() ?: 0.0
     val qRes = if (qAmt > 0 && qKar > 0) CalcEngine.qarz(qAmt, qKar, qM) else null
 
@@ -159,7 +159,7 @@ fun PracticalScreen() {
         SectionCard(title = "محاسبات تسهیلات قرض‌الحسنه", accentColor = Red600) {
             ChoiceChips("نوع تسهیلات", CalcEngine.qarzTypes, CalcEngine.qarzTypes[qType]) { qType = CalcEngine.qarzTypes.indexOf(it) }
             Spacer(Modifier.height(10.dp))
-            MoneyField("کارمزد (%)", qKarMOZ) { qKarMOZ = it }
+            LockedField("کارمزد (%) — ثابت", "${CalcEngine.QARZ_FEE_PCT.toInt()}")
             Spacer(Modifier.height(10.dp))
             DropdownSelector(
                 label = "مدت تسهیلات (ماه)",

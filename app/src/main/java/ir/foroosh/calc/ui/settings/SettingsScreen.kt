@@ -10,15 +10,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.TableChart
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +27,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,10 +36,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import ir.foroosh.calc.data.SettingsStore
 import ir.foroosh.calc.data.ThemeMode
@@ -50,13 +52,20 @@ import ir.foroosh.calc.ui.theme.Vazir
 import ir.foroosh.calc.ui.theme.Yellow500
 import ir.foroosh.calc.data.Coefficients
 
-/** تب «تنظیمات» — رمز عددی، بیومتریک، تم سه‌حالته و مشاهده جداول ضرایب */
+/** تب «تنظیمات» — رمز عددی، بیومتریک، تم سه‌حالته و مشاهده/ویرایش جداول ضرایب (با رمز امنیتی) */
 @Composable
 fun SettingsScreen(
     store: SettingsStore,
     themeMode: ThemeMode,
     onThemeChange: (ThemeMode) -> Unit
 ) {
+    // ---------- ویرایشگر جداول ضرایب (پس از ورود رمز امنیتی) ----------
+    var editorOpen by remember { mutableStateOf(false) }
+    if (editorOpen) {
+        CoefEditorPane(onExit = { editorOpen = false })
+        return
+    }
+
     var pinEnabledUi by rememberSaveable { mutableStateOf(store.pinEnabled) }
     var bioUi by rememberSaveable { mutableStateOf(store.biometricEnabled) }
     var showSetPin by remember { mutableStateOf(false) }
@@ -64,6 +73,8 @@ fun SettingsScreen(
     var showDisableConfirm by remember { mutableStateOf(false) }
     var showTable by remember { mutableStateOf(false) }
     var tableWhich by remember { mutableIntStateOf(0) }
+    var showEditGate by remember { mutableStateOf(false) }
+    var showSecChange by remember { mutableStateOf(false) }
     val canBio = store.canBiometric()
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -86,7 +97,7 @@ fun SettingsScreen(
                     Column {
                         Text("ورود با رمز عددی", style = MaterialTheme.typography.titleSmall)
                         Text(
-                            "قفل شدن برنامه هنگام شروع با رمز ۴ تا ۶ رقمی",
+                            "قفل شدن برنامه هنگام شروع با رمز ۸ رقمی",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -161,7 +172,7 @@ fun SettingsScreen(
                 Column {
                     Text("تم برنامه", style = MaterialTheme.typography.titleSmall)
                     Text(
-                        "انتخاب بین حالت سیستمی، سفید و خاکستری",
+                        "انتخاب بین حالت سیستمی، سفید و خاکستری تیره",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -196,9 +207,9 @@ fun SettingsScreen(
                 )
                 Spacer(Modifier.width(10.dp))
                 Column {
-                    Text("مشاهده جداول ضرایب", style = MaterialTheme.typography.titleSmall)
+                    Text("مشاهده و ویرایش جداول ضرایب", style = MaterialTheme.typography.titleSmall)
                     Text(
-                        "ضرایب استفاده‌شده در محاسبات، مطابق فایل اکسل فروش",
+                        "ضرایب مطابق فایل اکسل فروش؛ ویرایش نیازمند ورود رمز امنیتی است",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -212,6 +223,31 @@ fun SettingsScreen(
                 TextButton(onClick = { tableWhich = 1; showTable = true }) {
                     Text("جدول نیک وام", fontWeight = FontWeight.Bold, color = Red600)
                 }
+                TextButton(onClick = { showEditGate = true }) {
+                    Icon(
+                        Icons.Filled.Edit,
+                        contentDescription = null,
+                        tint = Yellow500,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text("ویرایش جداول", fontWeight = FontWeight.ExtraBold, color = Yellow500)
+                }
+            }
+            Spacer(Modifier.height(2.dp))
+            TextButton(onClick = { showSecChange = true }) {
+                Icon(
+                    Icons.Filled.Lock,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    "تغییر رمز امنیتی جداول",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
 
@@ -226,9 +262,9 @@ fun SettingsScreen(
                 )
                 Spacer(Modifier.width(10.dp))
                 Column {
-                    Text("فروش — نسخه ۱.۰.۰", style = MaterialTheme.typography.titleSmall)
+                    Text("فروش — نسخه ۱.۱.۰", style = MaterialTheme.typography.titleSmall)
                     Text(
-                        "محاسبه‌گر تسهیلات و تعهدات بانکی؛ فرمول‌ها و ضرایب دقیقاً مطابق فایل اکسل فروش (شایان، نیک وام، محاسبات کاربردی و گشایش اعتبار اسنادی داخلی ریالی).",
+                        "محاسبه‌گر تسهیلات و تعهدات بانکی؛ فرمول‌ها دقیقاً مطابق فایل اکسل فروش. در این نسخه: رمز ۸ رقمی، ورود رمز چپ‌به‌راست مثل صفحه قفل گوشی و ویرایش جداول ضرایب با رمز امنیتی.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -299,9 +335,29 @@ fun SettingsScreen(
             )
         }
     }
+
+    // ---------- رمز امنیتی: دروازه ویرایش جداول ----------
+    if (showEditGate) {
+        SecurityPinGateDialog(
+            store = store,
+            onGranted = {
+                showEditGate = false
+                editorOpen = true
+            },
+            onDismiss = { showEditGate = false }
+        )
+    }
+
+    // ---------- تغییر رمز امنیتی ----------
+    if (showSecChange) {
+        SecurityPinChangeDialog(
+            store = store,
+            onDismiss = { showSecChange = false }
+        )
+    }
 }
 
-/** دیالوگ ورود رمز (با تأیید رمز فعلی در حالت تغییر) */
+/** دیالوگ ورود رمز (با تأیید رمز فعلی در حالت تغییر) — رمز ۸ رقمی */
 @Composable
 private fun PinDialog(
     title: String,
@@ -317,7 +373,7 @@ private fun PinDialog(
 
     fun validate(): String? {
         if (withCurrent && !store.verifyPin(current)) return "رمز فعلی نادرست است"
-        if (pin.length !in 4..6) return "رمز باید ۴ تا ۶ رقم باشد"
+        if (pin.length != 8) return "رمز باید ۸ رقم باشد"
         if (pin != confirm) return "تکرار رمز مطابقت ندارد"
         return null
     }
@@ -326,41 +382,44 @@ private fun PinDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {
-            Column {
-                if (withCurrent) {
+            // اعداد از چپ به راست مثل ورود رمز در گوشی
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Column {
+                    if (withCurrent) {
+                        OutlinedTextField(
+                            value = current,
+                            onValueChange = { if (it.all { c -> c.isDigit() }) current = it.take(8) },
+                            label = { Text("رمز فعلی") },
+                            visualTransformation = PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(Modifier.height(10.dp))
+                    }
                     OutlinedTextField(
-                        value = current,
-                        onValueChange = { if (it.all { c -> c.isDigit() }) current = it.take(6) },
-                        label = { Text("رمز فعلی") },
+                        value = pin,
+                        onValueChange = { if (it.all { c -> c.isDigit() }) pin = it.take(8) },
+                        label = { Text("رمز جدید (۸ رقم)") },
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(Modifier.height(10.dp))
-                }
-                OutlinedTextField(
-                    value = pin,
-                    onValueChange = { if (it.all { c -> c.isDigit() }) pin = it.take(6) },
-                    label = { Text("رمز جدید (۴ تا ۶ رقم)") },
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(Modifier.height(10.dp))
-                OutlinedTextField(
-                    value = confirm,
-                    onValueChange = { if (it.all { c -> c.isDigit() }) confirm = it.take(6) },
-                    label = { Text("تکرار رمز جدید") },
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                if (err != null) {
-                    Spacer(Modifier.height(8.dp))
-                    Text(err ?: "", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    OutlinedTextField(
+                        value = confirm,
+                        onValueChange = { if (it.all { c -> c.isDigit() }) confirm = it.take(8) },
+                        label = { Text("تکرار رمز جدید") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (err != null) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(err ?: "", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    }
                 }
             }
         },
@@ -368,6 +427,131 @@ private fun PinDialog(
             TextButton(onClick = {
                 val e = validate()
                 if (e == null) onDone(pin) else err = e
+            }) { Text("ذخیره", fontWeight = FontWeight.Bold, color = Red600) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("انصراف") }
+        }
+    )
+}
+
+/** دیالوگ ورود رمز امنیتی برای ویرایش جداول ضرایب */
+@Composable
+private fun SecurityPinGateDialog(
+    store: SettingsStore,
+    onGranted: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    var pin by remember { mutableStateOf("") }
+    var err by remember { mutableStateOf<String?>(null) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("رمز امنیتی") },
+        text = {
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Column {
+                    Text(
+                        "برای ویرایش جداول ضرایب، رمز امنیتی را وارد کنید.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = pin,
+                        onValueChange = { if (it.all { c -> c.isDigit() }) pin = it.take(8) },
+                        label = { Text("رمز امنیتی") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        singleLine = true,
+                        isError = err != null,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (err != null) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(err ?: "", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                if (store.verifySecurityPin(pin)) onGranted() else err = "رمز امنیتی نادرست است"
+            }) { Text("ورود", fontWeight = FontWeight.Bold, color = Red600) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("انصراف") }
+        }
+    )
+}
+
+/** دیالوگ تغییر رمز امنیتی جداول ضرایب (رمز جدید ۸ رقم) */
+@Composable
+private fun SecurityPinChangeDialog(
+    store: SettingsStore,
+    onDismiss: () -> Unit
+) {
+    var current by remember { mutableStateOf("") }
+    var pin by remember { mutableStateOf("") }
+    var confirm by remember { mutableStateOf("") }
+    var err by remember { mutableStateOf<String?>(null) }
+
+    fun validate(): String? {
+        if (!store.verifySecurityPin(current)) return "رمز امنیتی فعلی نادرست است"
+        if (pin.length != 8) return "رمز جدید باید ۸ رقم باشد"
+        if (pin != confirm) return "تکرار رمز مطابقت ندارد"
+        return null
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("تغییر رمز امنیتی جداول") },
+        text = {
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Column {
+                    OutlinedTextField(
+                        value = current,
+                        onValueChange = { if (it.all { c -> c.isDigit() }) current = it.take(8) },
+                        label = { Text("رمز امنیتی فعلی") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    OutlinedTextField(
+                        value = pin,
+                        onValueChange = { if (it.all { c -> c.isDigit() }) pin = it.take(8) },
+                        label = { Text("رمز جدید (۸ رقم)") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    OutlinedTextField(
+                        value = confirm,
+                        onValueChange = { if (it.all { c -> c.isDigit() }) confirm = it.take(8) },
+                        label = { Text("تکرار رمز جدید") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (err != null) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(err ?: "", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                val e = validate()
+                if (e == null) {
+                    store.setSecurityPin(pin)
+                    onDismiss()
+                } else err = e
             }) { Text("ذخیره", fontWeight = FontWeight.Bold, color = Red600) }
         },
         dismissButton = {

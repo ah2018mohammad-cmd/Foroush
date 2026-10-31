@@ -186,6 +186,8 @@ object CalcEngine {
         )
     }
 
-    val qarzTypes = listOf("ازدواج", "فرزندآوری", "اشتغال", "سایر")
+    val qarzTypes = listOf("ازدواج", "فرزندآوری")
+    /** نرخ کارمزد ثابت قرض‌الحسنه (درصد) — طبق دستور کاربر، فقط ۴ */
+    const val QARZ_FEE_PCT = 4.0
     val qarzMonths = listOf(12, 24, 36, 48, 60, 72, 84, 96, 108, 120)
 }

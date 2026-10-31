@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,7 +42,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -63,7 +66,7 @@ fun LockScreen(store: SettingsStore, onUnlock: () -> Unit) {
     var bioUsed by remember { mutableStateOf(false) }
 
     fun typeKey(k: String) {
-        if (pin.length < 6) {
+        if (pin.length < 8) {
             pin += k
             error = false
         }
@@ -149,9 +152,10 @@ fun LockScreen(store: SettingsStore, onUnlock: () -> Unit) {
             )
             Spacer(Modifier.height(26.dp))
 
-            // نقاط رمز
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                repeat(6) { i ->
+            // نقاط رمز — از چپ به راست پر می‌شوند (مثل صفحه قفل گوشی)
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    repeat(8) { i ->
                     val filled = i < pin.length
                     Box(
                         Modifier
@@ -167,6 +171,7 @@ fun LockScreen(store: SettingsStore, onUnlock: () -> Unit) {
                     )
                 }
             }
+            }
             Spacer(Modifier.height(10.dp))
             Text(
                 if (error) "رمز نادرست است؛ دوباره تلاش کنید" else "رمز عددی خود را وارد کنید",
@@ -175,25 +180,27 @@ fun LockScreen(store: SettingsStore, onUnlock: () -> Unit) {
             )
             Spacer(Modifier.height(26.dp))
 
-            // صفحه‌کلید عددی
-            listOf(
-                listOf("1", "2", "3"),
-                listOf("4", "5", "6"),
-                listOf("7", "8", "9"),
-            ).forEach { row ->
+            // صفحه‌کلید عددی — چیدمان چپ‌به‌راست مثل صفحه قفل گوشی (۱ از سمت چپ)
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                listOf(
+                    listOf("1", "2", "3"),
+                    listOf("4", "5", "6"),
+                    listOf("7", "8", "9"),
+                ).forEach { row ->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(18.dp),
+                        modifier = Modifier.padding(vertical = 7.dp)
+                    ) {
+                        row.forEach { k -> KeyCap(k) { typeKey(k) } }
+                    }
+                }
+
+            // ردیف آخر: بیومتریک / صفر / پاک‌کن — چیدمان چپ‌به‌راست
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(18.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(vertical = 7.dp)
                 ) {
-                    row.forEach { k -> KeyCap(k) { typeKey(k) } }
-                }
-            }
-            // ردیف آخر: بیومتریک / صفر / پاک‌کن
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(18.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(vertical = 7.dp)
-            ) {
                 Box(Modifier.size(width = 74.dp, height = 58.dp), contentAlignment = Alignment.Center) {
                     if (store.biometricEnabled && store.canBiometric()) {
                         IconButton(onClick = { showBiometric() }) {
@@ -219,6 +226,7 @@ fun LockScreen(store: SettingsStore, onUnlock: () -> Unit) {
                             modifier = Modifier.size(26.dp)
                         )
                     }
+                }
                 }
             }
 
