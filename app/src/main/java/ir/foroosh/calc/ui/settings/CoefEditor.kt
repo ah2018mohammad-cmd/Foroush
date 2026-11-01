@@ -1,5 +1,6 @@
 package ir.foroosh.calc.ui.settings
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
@@ -64,6 +66,8 @@ private data class EditPlanRow(
  */
 @Composable
 fun CoefEditorPane(onExit: () -> Unit) {
+
+    val ctx = LocalContext.current
 
     fun fromCoef(r: CoefRow) = EditRow(
         rate = r.rate.toString(),
@@ -154,6 +158,7 @@ fun CoefEditorPane(onExit: () -> Unit) {
                     )
                 }
             )
+            Toast.makeText(ctx, "جدول طرح ها با موفقیت ذخیره شد", Toast.LENGTH_SHORT).show()
             onExit()
             return
         }
@@ -175,6 +180,7 @@ fun CoefEditorPane(onExit: () -> Unit) {
             )
         }
         if (which == 0) CoefficientRepo.saveShayan(list) else CoefficientRepo.saveNikvam(list)
+        Toast.makeText(ctx, "جدول ضرایب با موفقیت ذخیره شد", Toast.LENGTH_SHORT).show()
         onExit()
     }
 
@@ -336,6 +342,7 @@ fun CoefEditorPane(onExit: () -> Unit) {
                     }
                     loadTable(which)
                     confirmReset = false
+                    Toast.makeText(ctx, "جدول به مقادیر پیش‌فرض اکسل بازگشت", Toast.LENGTH_SHORT).show()
                 }) { Text("بازگردانی", color = Red600, fontWeight = FontWeight.Bold) }
             },
             dismissButton = {

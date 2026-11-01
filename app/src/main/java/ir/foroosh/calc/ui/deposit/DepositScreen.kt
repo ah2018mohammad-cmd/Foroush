@@ -55,7 +55,7 @@ fun DepositScreen() {
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
 
         // ----- ورودی‌ها -----
-        SectionCard(title = "ورودی‌های محاسبه") {
+        SectionCard(title = "اطلاعات زیر را تکمیل نمائید") {
             MoneyField(
                 label = "مبلغ سپرده (ریال)",
                 value = amount,
@@ -80,7 +80,7 @@ fun DepositScreen() {
                 )
             } else {
                 Text(
-                    "وضعیت و سود هر طرح برای ورودی شما؛ فرمول‌ها دقیقاً مطابق فایل اکسل",
+                    "وضعیت و سود هر طرح برای ورودی شما",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -141,7 +141,7 @@ private fun PlanResultCard(r: DepositCalc.PlanResult, days: Int) {
                 )
             }
             Spacer(Modifier.height(6.dp))
-            ResultRow("حداقل سپرده", fmtMoney(r.minDeposit) + " ریال")
+            ResultRow("حداقل سپرده", fmtMoney(r.minDeposit) + " ریال", highlight = true)
             ResultRow("حداقل ماندگاری", "${r.minDays} روز")
             ResultRow("نرخ عادی سالانه", fmtRate(r.rate))
             ResultRow("نرخ مؤثر محاسباتی", if (r.effRate > 0.0) fmtRate(r.effRate) else "—")

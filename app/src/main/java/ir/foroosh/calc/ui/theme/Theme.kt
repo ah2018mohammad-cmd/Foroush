@@ -41,21 +41,21 @@ private fun whiteScheme() = lightColorScheme(
     error = Color(0xFFB3261E),
 )
 
-/** حالت «خاکستری» */
-private fun grayScheme() = lightColorScheme(
-    primary = Red700, onPrimary = Color.White,
-    secondary = Color(0xFFB98A00), onSecondary = Ink900,
+/** حالت «مشکی تیره» — تم شبانه واقعی با پس‌زمینه نزدیک به مشکی */
+private fun grayScheme() = darkColorScheme(
+    primary = Red600, onPrimary = Color.White,
+    secondary = Yellow500, onSecondary = Ink900,
     tertiary = Red800,
-    background = Mist200, onBackground = Color(0xFF22252B),
-    surface = Color(0xFFEFF1F4), onSurface = Color(0xFF22252B),
-    surfaceVariant = Color(0xFFE0E3E8), onSurfaceVariant = Color(0xFF4E545E),
-    surfaceContainer = Color(0xFFEFF1F4),
-    surfaceContainerLow = Color(0xFFEAECF0),
-    surfaceContainerHigh = Color(0xFFE0E3E8),
-    outline = Color(0xFFC3C8D0), outlineVariant = Color(0xFFD4D8DE),
-    primaryContainer = Color(0xFFF6D9D9), onPrimaryContainer = Color(0xFF6E1414),
-    secondaryContainer = Color(0xFFEFE2BC), onSecondaryContainer = Color(0xFF5E4A00),
-    error = Color(0xFFB3261E),
+    background = Color(0xFF0B0C0E), onBackground = OnDark,
+    surface = Color(0xFF141518), onSurface = OnDark,
+    surfaceVariant = Color(0xFF1C1E22), onSurfaceVariant = OnDarkDim,
+    surfaceContainer = Color(0xFF141518),
+    surfaceContainerLow = Color(0xFF101114),
+    surfaceContainerHigh = Color(0xFF1C1E22),
+    outline = Color(0xFF3A3E46), outlineVariant = Color(0xFF26292E),
+    primaryContainer = Red800, onPrimaryContainer = Color.White,
+    secondaryContainer = Color(0xFF4A3D1E), onSecondaryContainer = Yellow500,
+    error = Color(0xFFFF7B72),
 )
 
 @Composable

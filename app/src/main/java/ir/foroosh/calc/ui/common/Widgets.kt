@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ir.foroosh.calc.ui.theme.Vazir
+import ir.foroosh.calc.ui.theme.Yellow500
 import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -252,7 +253,8 @@ fun SectionCard(
 fun ResultRow(
     label: String,
     value: String?,
-    key: Boolean = false
+    key: Boolean = false,
+    highlight: Boolean = false
 ) {
     Row(
         Modifier
@@ -264,14 +266,17 @@ fun ResultRow(
         Text(
             label,
             style = if (key) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            fontWeight = if (highlight) FontWeight.Bold else null,
+            fontFamily = Vazir,
+            color = if (highlight) Yellow500 else MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
             value ?: "—",
             style = if (key) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold,
             fontFamily = Vazir,
-            color = if (key) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface
+            color = if (highlight) Yellow500
+            else if (key) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface
         )
     }
 }

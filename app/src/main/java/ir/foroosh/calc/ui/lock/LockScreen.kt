@@ -1,5 +1,6 @@
 package ir.foroosh.calc.ui.lock
 
+import android.view.HapticFeedbackConstants
 import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -43,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.text.font.FontWeight
@@ -61,6 +63,7 @@ import ir.foroosh.calc.ui.theme.Yellow500
 @Composable
 fun LockScreen(store: SettingsStore, onUnlock: () -> Unit) {
     val context = LocalContext.current
+    val view = LocalView.current
     var pin by remember { mutableStateOf("") }
     var error by remember { mutableStateOf(false) }
     var bioUsed by remember { mutableStateOf(false) }
@@ -73,7 +76,7 @@ fun LockScreen(store: SettingsStore, onUnlock: () -> Unit) {
     }
 
     fun submit() {
-        if (pin.length < 4) return
+        if (pin.length < 8) return
         if (store.verifyPin(pin)) onUnlock() else {
             error = true
             pin = ""
@@ -216,6 +219,7 @@ fun LockScreen(store: SettingsStore, onUnlock: () -> Unit) {
                 KeyCap("0") { typeKey("0") }
                 Box(Modifier.size(width = 74.dp, height = 58.dp), contentAlignment = Alignment.Center) {
                     IconButton(onClick = {
+                        view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                         if (pin.isNotEmpty()) pin = pin.dropLast(1)
                         error = false
                     }) {
@@ -231,18 +235,21 @@ fun LockScreen(store: SettingsStore, onUnlock: () -> Unit) {
             }
 
             Spacer(Modifier.height(20.dp))
-            // دکمه ورود
+            // دکمه ورود — پس از تکمیل هر ۸ رقم فعال می‌شود
             val enterInteraction = remember { MutableInteractionSource() }
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = if (pin.length >= 4) Red600 else Color(0x33FFFFFF),
+                color = if (pin.length >= 8) Red600 else Color(0x33FFFFFF),
                 modifier = Modifier
                     .fillMaxWidth(0.6f)
                     .height(50.dp)
                     .clickable(
                         interactionSource = enterInteraction,
                         indication = null
-                    ) { if (pin.length >= 4) submit() }
+                    ) {
+                        view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                        if (pin.length >= 8) submit()
+                    }
             ) {
                 Row(
                     Modifier.fillMaxSize(),
@@ -270,6 +277,7 @@ fun LockScreen(store: SettingsStore, onUnlock: () -> Unit) {
 
 @Composable
 private fun KeyCap(label: String, onClick: () -> Unit) {
+    val keyView = LocalView.current
     val interaction = remember { MutableInteractionSource() }
     Surface(
         shape = RoundedCornerShape(18.dp),
@@ -277,7 +285,11 @@ private fun KeyCap(label: String, onClick: () -> Unit) {
         border = BorderStroke(1.dp, Color(0x33FFFFFF)),
         modifier = Modifier
             .size(width = 74.dp, height = 58.dp)
-            .clickable(interactionSource = interaction, indication = null, onClick = onClick)
+            .clickable(interactionSource = interaction, indication = null) {
+                // ویبره خفیف هنگام ورود هر رقم (مثل صفحه‌کلید گوشی)
+                keyView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                onClick()
+            }
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(

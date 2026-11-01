@@ -41,6 +41,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -49,6 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.fragment.app.FragmentActivity
 import ir.foroosh.calc.data.SettingsStore
 import ir.foroosh.calc.ui.deposit.DepositScreen
@@ -57,12 +59,8 @@ import ir.foroosh.calc.ui.lc.LcScreen
 import ir.foroosh.calc.ui.lock.LockScreen
 import ir.foroosh.calc.ui.practical.PracticalScreen
 import ir.foroosh.calc.ui.settings.SettingsScreen
-import ir.foroosh.calc.ui.theme.DawnPink
 import ir.foroosh.calc.ui.theme.ForooshTheme
 import ir.foroosh.calc.ui.theme.GoldBanner
-import ir.foroosh.calc.ui.theme.LightSkyBlue
-import ir.foroosh.calc.ui.theme.Orange500
-import ir.foroosh.calc.ui.theme.PistachioGreen
 import java.util.Locale
 
 /** اکتیویتی اصلی — FragmentActivity برای پشتیبانی BiometricPrompt */
@@ -111,17 +109,17 @@ class MainActivity : FragmentActivity() {
 
 /**
  * تب‌های اصلی — ترتیب از راست به چپ (چیدمان RTL؛ اولین آیتم، راست‌ترین است):
- * سپرده گذاری | تسهیلات | کاربری | اعتبار اسنادی | تنظیمات
- * هر تب یک سربرگ رنگی با متن سیاه دارد.
+ * سپرده گذاری | تسهیلات مصارف شخصی | کاربری | اعتبار اسنادی | تنظیمات
+ * سربرگ بالای صفحه در همه تب‌ها زرد طلایی با انتهای نیم‌دایره‌ای و متن سیاه است.
  */
-private data class TabItem(val banner: String, val short: String, val icon: ImageVector, val bannerColor: Color)
+private data class TabItem(val banner: String, val short: String, val icon: ImageVector)
 
 private val tabs = listOf(
-    TabItem("محاسبه‌گر و مقایسه طرح‌های سپرده", "سپرده گذاری", Icons.Filled.Savings, GoldBanner),
-    TabItem("تسهیلات", "تسهیلات", Icons.Filled.Percent, PistachioGreen),
-    TabItem("محاسبات کاربردی تسهیلات و تعهدات", "کاربری", Icons.Filled.Calculate, LightSkyBlue),
-    TabItem("کارمزد گشایش اعتبار اسنادی داخلی", "اعتبار اسنادی", Icons.Filled.ReceiptLong, Orange500),
-    TabItem("تنظیمات", "تنظیمات", Icons.Filled.Settings, DawnPink),
+    TabItem("محاسبه‌گر و مقایسه طرح‌های سپرده گذاری", "سپرده گذاری", Icons.Filled.Savings),
+    TabItem("تسهیلات مصارف شخصی", "تسهیلات مصارف شخصی", Icons.Filled.Percent),
+    TabItem("محاسبات کاربردی تسهیلات و تعهدات", "کاربری", Icons.Filled.Calculate),
+    TabItem("کارمزد گشایش اعتبار اسنادی داخلی", "اعتبار اسنادی", Icons.Filled.ReceiptLong),
+    TabItem("تنظیمات", "تنظیمات", Icons.Filled.Settings),
 )
 
 @Composable
@@ -151,7 +149,8 @@ private fun MainScaffold(store: SettingsStore, themeMode: ir.foroosh.calc.data.T
                             Text(
                                 t.short,
                                 style = MaterialTheme.typography.labelSmall,
-                                maxLines = 1
+                                maxLines = 2,
+                                textAlign = TextAlign.Center
                             )
                         },
                         colors = NavigationBarItemDefaults.colors(
@@ -173,22 +172,30 @@ private fun MainScaffold(store: SettingsStore, themeMode: ir.foroosh.calc.data.T
                 .padding(pad)
                 .imePadding()
         ) {
-            // سربرگ رنگی تب فعال — تمام‌عرض، متن سیاه وسط کادر
+            // سربرگ ثابت بالای برنامه — زرد طلایی با انتهای نیم‌دایره‌ای، متن سیاه وسط کادر
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .background(tabs[tab].bannerColor)
-                    .padding(horizontal = 12.dp, vertical = 11.dp),
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    tabs[tab].banner,
-                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp, lineHeight = 20.sp),
-                    fontWeight = FontWeight.Black,
-                    color = Color.Black,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1
-                )
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(50))
+                        .background(GoldBanner)
+                        .padding(horizontal = 14.dp, vertical = 11.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        tabs[tab].banner,
+                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp, lineHeight = 20.sp),
+                        fontWeight = FontWeight.Black,
+                        color = Color.Black,
+                        textAlign = TextAlign.Center,
+                        maxLines = 1
+                    )
+                }
             }
 
             // محتوای تب فعال

@@ -1,5 +1,6 @@
 package ir.foroosh.calc.ui.settings
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ir.foroosh.calc.data.DepositPlans
@@ -95,6 +97,7 @@ fun TitlesEditorPane(onExit: () -> Unit) {
     // ---------- دیالوگ ویرایش عنوان ----------
     if (editTarget >= 0) {
         val isPlan = editTarget >= 10
+        val ctx = LocalContext.current
         AlertDialog(
             onDismissRequest = { editTarget = -1 },
             title = { Text(if (isPlan) "ویرایش عنوان طرح" else "ویرایش عنوان تسهیلات") },
@@ -122,6 +125,7 @@ fun TitlesEditorPane(onExit: () -> Unit) {
                                 if (editTarget == 0) shayanT = v else nikvamT = v
                                 TitlesRepo.save(shayanT, nikvamT)
                             }
+                            Toast.makeText(ctx, "عنوان جدید با موفقیت ذخیره شد", Toast.LENGTH_SHORT).show()
                         }
                         editTarget = -1
                     }

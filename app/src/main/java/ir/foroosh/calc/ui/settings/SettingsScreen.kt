@@ -1,5 +1,6 @@
 package ir.foroosh.calc.ui.settings
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -86,6 +88,15 @@ fun SettingsScreen(
     var showTitleGate by remember { mutableStateOf(false) }
     var showSecChange by remember { mutableStateOf(false) }
     val canBio = store.canBiometric()
+    val ctx = LocalContext.current
+
+    // نمایش پیام مناسب پس از هر تغییر
+    fun toast(msg: String) = Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
+
+    fun setTheme(mode: ThemeMode) {
+        onThemeChange(mode)
+        toast("تم برنامه به «${mode.label}» تغییر کرد")
+    }
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
 
@@ -163,6 +174,7 @@ fun SettingsScreen(
                         onCheckedChange = { on ->
                             store.setBiometric(on)
                             bioUi = on
+                            toast(if (on) "ورود بیومتریک فعال شد" else "ورود بیومتریک غیرفعال شد")
                         }
                     )
                 }
@@ -193,13 +205,13 @@ fun SettingsScreen(
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .clickable { onThemeChange(mode) }
+                        .clickable { setTheme(mode) }
                         .padding(vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
                         selected = themeMode == mode,
-                        onClick = { onThemeChange(mode) }
+                        onClick = { setTheme(mode) }
                     )
                     Text(mode.label, style = MaterialTheme.typography.bodyLarge)
                 }
@@ -345,6 +357,7 @@ fun SettingsScreen(
                 store.setPin(it)
                 pinEnabledUi = true
                 showSetPin = false
+                toast("رمز ۸ رقمی با موفقیت ثبت شد")
             }
         )
     }
@@ -357,6 +370,7 @@ fun SettingsScreen(
             onDone = {
                 store.setPin(it)
                 showChangePin = false
+                toast("رمز عددی با موفقیت تغییر کرد")
             }
         )
     }
@@ -371,6 +385,7 @@ fun SettingsScreen(
                     pinEnabledUi = false
                     bioUi = false
                     showDisableConfirm = false
+                    toast("رمز عددی حذف شد")
                 }) { Text("حذف شود", color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = {
@@ -524,6 +539,7 @@ private fun SecurityPinGateDialog(
     var pin by remember { mutableStateOf("") }
     var err by remember { mutableStateOf<String?>(null) }
     var confirmResetSec by remember { mutableStateOf(false) }
+    val resetCtx = LocalContext.current
 
     fun tryVerify() {
         if (store.verifySecurityPin(pin)) onGranted() else err = "رمز امنیتی نادرست است؛ اگر رمز پیش‌فرض است: 12345678"
@@ -593,6 +609,7 @@ private fun SecurityPinGateDialog(
                 TextButton(onClick = {
                     store.resetSecurityPin()
                     confirmResetSec = false
+                    Toast.makeText(resetCtx, "رمز امنیتی به مقدار پیش‌فرض (12345678) بازگشت", Toast.LENGTH_SHORT).show()
                 }) { Text("بازنشانی", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold) }
             },
             dismissButton = {
@@ -608,6 +625,7 @@ private fun SecurityPinChangeDialog(
     store: SettingsStore,
     onDismiss: () -> Unit
 ) {
+    val ctx = LocalContext.current
     var current by remember { mutableStateOf("") }
     var pin by remember { mutableStateOf("") }
     var confirm by remember { mutableStateOf("") }
@@ -662,15 +680,16 @@ private fun SecurityPinChangeDialog(
                 }
             }
         },
-        confirmButton = {
-            TextButton(onClick = {
-                val e = validate()
-                if (e == null) {
-                    store.setSecurityPin(pin)
-                    onDismiss()
-                } else err = e
-            }) { Text("ذخیره", fontWeight = FontWeight.Bold, color = Red600) }
-        },
+            confirmButton = {
+                TextButton(onClick = {
+                    val e = validate()
+                    if (e == null) {
+                        store.setSecurityPin(pin)
+                        onDismiss()
+                        Toast.makeText(ctx, "رمز امنیتی جداول با موفقیت تغییر کرد", Toast.LENGTH_SHORT).show()
+                    } else err = e
+                }) { Text("ذخیره", fontWeight = FontWeight.Bold, color = Red600) }
+            },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("انصراف") }
         }

@@ -50,7 +50,7 @@ fun NikVamScreen() {
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
 
-        SectionCard(title = "ورودی‌های محاسبه") {
+        SectionCard(title = "اطلاعات زیر را تکمیل نمائید") {
             Text(
                 "نوع محاسبه",
                 style = MaterialTheme.typography.titleSmall,

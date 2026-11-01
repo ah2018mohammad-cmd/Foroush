@@ -57,7 +57,7 @@ fun ShayanScreen() {
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
 
         // ----- ورودی‌ها -----
-        SectionCard(title = "ورودی‌های محاسبه") {
+        SectionCard(title = "اطلاعات زیر را تکمیل نمائید") {
             // نوع محاسبه
             Text(
                 "نوع محاسبه",
