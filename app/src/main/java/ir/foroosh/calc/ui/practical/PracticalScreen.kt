@@ -70,7 +70,9 @@ fun PracticalScreen() {
     var qType by remember { mutableIntStateOf(0) } // ازدواج
     var qMonthIdx by remember { mutableIntStateOf(4) } // 60
     var qAmount by remember { mutableStateOf("2000000000") }
-    val qM = CalcEngine.qarzMonths[qMonthIdx]
+    // مدت‌های قابل انتخاب — تسهیلات فرزندآوری فقط از ۱۲ تا ۸۴ ماه
+    val qMonths = if (qType == 1) CalcEngine.qarzMonthsFarzand else CalcEngine.qarzMonths
+    val qM = qMonths[qMonthIdx.coerceAtMost(qMonths.size - 1)]
     val qKar = CalcEngine.QARZ_FEE_PCT // کارمزد ثابت ۴٪ — غیرقابل ویرایش
     val qAmt = qAmount.toLongOrNull()?.toDouble() ?: 0.0
     val qRes = if (qAmt > 0 && qKar > 0) CalcEngine.qarz(qAmt, qKar, qM) else null
@@ -157,14 +159,20 @@ fun PracticalScreen() {
 
         // ---------- ۵ ----------
         SectionCard(title = "محاسبات تسهیلات قرض‌الحسنه", accentColor = Red600) {
-            ChoiceChips("نوع تسهیلات", CalcEngine.qarzTypes, CalcEngine.qarzTypes[qType]) { qType = CalcEngine.qarzTypes.indexOf(it) }
+            ChoiceChips("نوع تسهیلات", CalcEngine.qarzTypes, CalcEngine.qarzTypes[qType]) {
+                qType = CalcEngine.qarzTypes.indexOf(it)
+                // در فرزندآوری مدت بیش از ۸۴ ماه مجاز نیست — به ۸۴ ماه برگردد
+                if (qType == 1 && CalcEngine.qarzMonths[qMonthIdx] > 84) {
+                    qMonthIdx = CalcEngine.qarzMonths.indexOf(84)
+                }
+            }
             Spacer(Modifier.height(10.dp))
             LockedField("کارمزد (%) — ثابت", "${CalcEngine.QARZ_FEE_PCT.toInt()}")
             Spacer(Modifier.height(10.dp))
             DropdownSelector(
                 label = "مدت تسهیلات (ماه)",
-                options = CalcEngine.qarzMonths.map { "$it" },
-                selectedIndex = qMonthIdx,
+                options = qMonths.map { "$it" },
+                selectedIndex = qMonthIdx.coerceAtMost(qMonths.size - 1),
                 onSelect = { qMonthIdx = it }
             )
             Spacer(Modifier.height(10.dp))

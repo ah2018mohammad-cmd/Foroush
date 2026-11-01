@@ -97,7 +97,7 @@ fun LcScreen() {
             if (res != null) {
                 ResultRow("پیش دریافت", fmtMoney(res.prepay))
                 ResultRow("درصد مانده تعهدات مشتری بابت گشایش", "${res.remainPct.toLong()}%")
-                ResultRow("مبلغ مانده تعهدات مشتری بابت گشایش", fmtMoney(res.remain))
+                ResultRow("مبلغ مانده تعهدات مشتری", fmtMoney(res.remain))
                 Spacer(Modifier.height(6.dp))
                 BigResult("کارمزد گشایش (ریال)", fmtMoney(res.openingFee))
             }

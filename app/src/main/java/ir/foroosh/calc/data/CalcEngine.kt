@@ -190,4 +190,6 @@ object CalcEngine {
     /** نرخ کارمزد ثابت قرض‌الحسنه (درصد) — طبق دستور کاربر، فقط ۴ */
     const val QARZ_FEE_PCT = 4.0
     val qarzMonths = listOf(12, 24, 36, 48, 60, 72, 84, 96, 108, 120)
+    /** مدت‌های مجاز تسهیلات فرزندآوری — فقط از ۱۲ تا ۸۴ ماه */
+    val qarzMonthsFarzand = qarzMonths.filter { it <= 84 }
 }
