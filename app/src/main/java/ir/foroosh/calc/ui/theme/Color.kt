@@ -17,3 +17,10 @@ val Mist100 = Color(0xFFF2F3F5)
 val Mist200 = Color(0xFFE3E5E9)
 val OnDark = Color(0xFFF4F5F7)
 val OnDarkDim = Color(0xFFB9BDC6)
+
+// رنگ‌های سربرگ تب‌ها (کادر بالای صفحه) — همه با متن سیاه
+val PistachioGreen = Color(0xFF93C572)   // تسهیلات — سبز پسته‌ای
+val LightSkyBlue = Color(0xFFADD8E6)     // کاربری — آبی روشن
+val Orange500 = Color(0xFFFFA500)        // اعتبار اسنادی — پرتقالی
+val DawnPink = Color(0xFFFFA6B9)         // تنظیمات — صورتی شفقی
+val GoldBanner = Color(0xFFFFD54F)       // سپرده گذاری — طلایی روشن

@@ -40,7 +40,6 @@ fun NikVamScreen() {
     var amount by remember { mutableStateOf("7000000000") }
     var avg by remember { mutableIntStateOf(1) }
     var repay by remember { mutableIntStateOf(24) }
-    var showTable by remember { mutableStateOf(false) }
 
     val rate = Coefficients.nikvamRate
     val repayOpts = Coefficients.nikvamRepayOptions(avg)
@@ -48,7 +47,6 @@ fun NikVamScreen() {
 
     val amt = amount.toLongOrNull()?.toDouble() ?: 0.0
     val res = if (amt > 0) CalcEngine.nikvam(forward, amt, rate, avg, effRepay) else null
-    val coefRow = Coefficients.nikvamFor(avg, effRepay)
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
 
@@ -145,24 +143,6 @@ fun NikVamScreen() {
                 ResultRow("اقساط ماهانه", fmtMoney(res.installment))
                 ResultRow("مبلغ وثیقه مورد نیاز", fmtMoney(res.collateral), key = true)
             }
-            Spacer(Modifier.height(8.dp))
-            androidx.compose.material3.TextButton(onClick = { showTable = true }) {
-                Text(
-                    "مشاهده جدول ضرایب نیک وام",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-
-        if (showTable) {
-            CoefTableDialog(
-                title = "جدول ضرایب نیک وام",
-                rows = Coefficients.nikvam,
-                highlight = coefRow,
-                onDismiss = { showTable = false }
-            )
         }
     }
 }

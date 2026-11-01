@@ -44,7 +44,6 @@ fun ShayanScreen() {
     var rate by remember { mutableIntStateOf(23) }                 // نرخ تسهیلات
     var avg by remember { mutableIntStateOf(3) }                   // دوره معدل‌گیری
     var repay by remember { mutableIntStateOf(24) }                // حداکثر دوره بازپرداخت
-    var showTable by remember { mutableStateOf(false) }
 
     // گزینه‌های داینامیک مطابق لیست‌های اکسل (اقساط داینامیک / دوره معدل‌گیری داینامیک)
     val avgOpts = Coefficients.shayanAvgOptions(rate)
@@ -54,7 +53,6 @@ fun ShayanScreen() {
 
     val amt = amount.toLongOrNull()?.toDouble() ?: 0.0
     val res = if (amt > 0) CalcEngine.shayan(forward, amt, rate, effAvg, effRepay) else null
-    val coefRow = Coefficients.shayanFor(rate, effAvg, effRepay)
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
 
@@ -141,24 +139,6 @@ fun ShayanScreen() {
                     key = true
                 )
             }
-            Spacer(Modifier.height(8.dp))
-            TextButton(onClick = { showTable = true }) {
-                Text(
-                    "مشاهده جدول ضرایب شایان",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = Red600,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-
-        if (showTable) {
-            CoefTableDialog(
-                title = "جدول ضرایب شایان",
-                rows = Coefficients.shayan,
-                highlight = coefRow,
-                onDismiss = { showTable = false }
-            )
         }
     }
 }

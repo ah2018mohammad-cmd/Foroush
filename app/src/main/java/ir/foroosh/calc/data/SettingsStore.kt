@@ -7,7 +7,7 @@ import java.security.SecureRandom
 
 /** حالت تم برنامه */
 enum class ThemeMode(val label: String) {
-    SYSTEM("سیستمی"), WHITE("روشن"), GRAY("تیره")
+    SYSTEM("سیستمی"), WHITE("سفید روشن"), GRAY("مشکی تیره")
 }
 
 /** ذخیره‌سازی تنظیمات: تم، رمز عددی (هش‌شده با نمک) و بیومتریک */

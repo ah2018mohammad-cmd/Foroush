@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Fingerprint
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Palette
@@ -45,7 +44,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import ir.foroosh.calc.data.SettingsStore
 import ir.foroosh.calc.data.ThemeMode
+import ir.foroosh.calc.data.TitlesRepo
+import ir.foroosh.calc.data.DepositPlans
 import ir.foroosh.calc.ui.common.SectionCard
+import ir.foroosh.calc.ui.deposit.PlansTableDialog
 import ir.foroosh.calc.ui.shayan.CoefTableDialog
 import ir.foroosh.calc.ui.theme.Red600
 import ir.foroosh.calc.ui.theme.Vazir
@@ -59,10 +61,17 @@ fun SettingsScreen(
     themeMode: ThemeMode,
     onThemeChange: (ThemeMode) -> Unit
 ) {
-    // ---------- ویرایشگر جداول ضرایب (پس از ورود رمز امنیتی) ----------
+    // ---------- ویرایشگر جداول ضرایب و طرح ها (پس از ورود رمز امنیتی) ----------
     var editorOpen by remember { mutableStateOf(false) }
     if (editorOpen) {
         CoefEditorPane(onExit = { editorOpen = false })
+        return
+    }
+
+    // ---------- ویرایشگر عناوین تسهیلات و طرح ها (پس از ورود رمز امنیتی) ----------
+    var titleEditorOpen by remember { mutableStateOf(false) }
+    if (titleEditorOpen) {
+        TitlesEditorPane(onExit = { titleEditorOpen = false })
         return
     }
 
@@ -72,8 +81,9 @@ fun SettingsScreen(
     var showChangePin by remember { mutableStateOf(false) }
     var showDisableConfirm by remember { mutableStateOf(false) }
     var showTable by remember { mutableStateOf(false) }
-    var tableWhich by remember { mutableIntStateOf(0) }
+    var tableWhich by remember { mutableIntStateOf(0) }   // 0=شایان 1=نیک وام 2=طرح ها
     var showEditGate by remember { mutableStateOf(false) }
+    var showTitleGate by remember { mutableStateOf(false) }
     var showSecChange by remember { mutableStateOf(false) }
     val canBio = store.canBiometric()
 
@@ -172,7 +182,7 @@ fun SettingsScreen(
                 Column {
                     Text("تم برنامه", style = MaterialTheme.typography.titleSmall)
                     Text(
-                        "انتخاب بین حالت سیستمی، روشن و تیره",
+                        "انتخاب بین حالت سیستمی، سفید روشن و مشکی تیره",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -196,8 +206,8 @@ fun SettingsScreen(
             }
         }
 
-        // ---------- جداول ضرایب ----------
-        SectionCard(title = "جداول ضرایب", accentColor = Yellow500) {
+        // ---------- طرح های سپرده گذاری و تسهیلاتی ----------
+        SectionCard(title = "طرح های سپرده گذاری و تسهیلاتی", accentColor = Yellow500) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     Icons.Filled.TableChart,
@@ -207,9 +217,9 @@ fun SettingsScreen(
                 )
                 Spacer(Modifier.width(10.dp))
                 Column {
-                    Text("مشاهده و ویرایش جداول ضرایب", style = MaterialTheme.typography.titleSmall)
+                    Text("مشاهده و ویرایش جداول ضرایب و طرح ها", style = MaterialTheme.typography.titleSmall)
                     Text(
-                        "ضرایب مطابق فایل اکسل فروش؛ ویرایش نیازمند ورود رمز امنیتی است",
+                        "ضرایب و طرح‌ها مطابق فایل‌های اکسل؛ ویرایش نیازمند ورود رمز امنیتی است",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -229,7 +239,7 @@ fun SettingsScreen(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text("جدول شایان", fontWeight = FontWeight.Bold, color = Red600)
+                    Text("جدول ${TitlesRepo.shayan}", fontWeight = FontWeight.Bold, color = Red600)
                 }
                 TextButton(
                     onClick = { tableWhich = 1; showTable = true },
@@ -242,7 +252,20 @@ fun SettingsScreen(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text("جدول نیک وام", fontWeight = FontWeight.Bold, color = Red600)
+                    Text("جدول ${TitlesRepo.nikvam}", fontWeight = FontWeight.Bold, color = Red600)
+                }
+                TextButton(
+                    onClick = { tableWhich = 2; showTable = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        Icons.Filled.TableChart,
+                        contentDescription = null,
+                        tint = Red600,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text("جدول طرح ها", fontWeight = FontWeight.Bold, color = Red600)
                 }
                 TextButton(
                     onClick = { showEditGate = true },
@@ -275,24 +298,38 @@ fun SettingsScreen(
             }
         }
 
-        // ---------- درباره ----------
-        SectionCard(title = "درباره برنامه", accentColor = MaterialTheme.colorScheme.primary) {
+        // ---------- ویرایش تسهیلات و طرح های سپرده گذاری ----------
+        SectionCard(title = "ویرایش تسهیلات و طرح های سپرده گذاری", accentColor = Red600) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Filled.Info,
+                    Icons.Filled.Edit,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = Red600,
                     modifier = Modifier.size(22.dp)
                 )
                 Spacer(Modifier.width(10.dp))
                 Column {
-                    Text("فروش — نسخه ۱.۲.۰", style = MaterialTheme.typography.titleSmall)
+                    Text("ویرایش عناوین", style = MaterialTheme.typography.titleSmall)
                     Text(
-                        "محاسبه‌گر تسهیلات و تعهدات بانکی؛ فرمول‌ها دقیقاً مطابق فایل اکسل فروش. در این نسخه: برچسب تم‌ها (روشن/تیره)، اصلاح ورود به ویرایش جداول ضرایب با نمایش رمز پیش‌فرض و امکان بازنشانی، حذف عنوان بالای برنامه و آلارم چشمک‌زن یک‌ثانیه‌ای هنگام انتخاب تب شایان (قرمز) و نیک وام (سبز).",
+                        "تغییر عنوان هر تسهیلات و هر طرح سپرده‌گذاری؛ ورود با رمز امنیتی",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+            }
+            Spacer(Modifier.height(10.dp))
+            TextButton(
+                onClick = { showTitleGate = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    Icons.Filled.Edit,
+                    contentDescription = null,
+                    tint = Yellow500,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text("ورود به ویرایش عناوین", fontWeight = FontWeight.ExtraBold, color = Yellow500)
             }
         }
     }
@@ -345,16 +382,22 @@ fun SettingsScreen(
     if (showTable) {
         if (tableWhich == 0) {
             CoefTableDialog(
-                title = "جدول ضرایب شایان",
+                title = "جدول ضرایب ${TitlesRepo.shayan}",
                 rows = Coefficients.shayan,
                 highlight = null,
                 onDismiss = { showTable = false }
             )
-        } else {
+        } else if (tableWhich == 1) {
             CoefTableDialog(
-                title = "جدول ضرایب نیک وام",
+                title = "جدول ضرایب ${TitlesRepo.nikvam}",
                 rows = Coefficients.nikvam,
                 highlight = null,
+                onDismiss = { showTable = false }
+            )
+        } else {
+            PlansTableDialog(
+                title = "جدول طرح ها",
+                rows = DepositPlans.plans,
                 onDismiss = { showTable = false }
             )
         }
@@ -369,6 +412,18 @@ fun SettingsScreen(
                 editorOpen = true
             },
             onDismiss = { showEditGate = false }
+        )
+    }
+
+    // ---------- رمز امنیتی: دروازه ویرایش عناوین ----------
+    if (showTitleGate) {
+        SecurityPinGateDialog(
+            store = store,
+            onGranted = {
+                showTitleGate = false
+                titleEditorOpen = true
+            },
+            onDismiss = { showTitleGate = false }
         )
     }
 
@@ -481,7 +536,7 @@ private fun SecurityPinGateDialog(
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 Column {
                     Text(
-                        "برای ویرایش جداول ضرایب، رمز امنیتی را وارد کنید.",
+                        "برای ادامه، رمز امنیتی را وارد کنید.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
